@@ -31,6 +31,7 @@ do
 
 		docker build -t kmod-$ARCH-builder .
 		docker run --rm -e ARCH=$ARCH \
+						-e SUITE=$SUITE \
 						-e ACCESS_KEY=$ACCESS_KEY \
 						-e SECRET_KEY=$SECRET_KEY \
 						-e BUCKET_NAME=$BUCKET_NAME kmod-$ARCH-builder bash build.sh
