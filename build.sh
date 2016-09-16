@@ -1,21 +1,15 @@
 #!/bin/bash
 
 set -o errexit
+set -o pipefail
 
-mkdir -p /out/kmod-$KMOD_VERSION
-cd /kmod-$KMOD_VERSION
+PACKAGE_NAME=kmod-$KMOD_VERSION-resin
 
-./configure \
-	--sysconfdir=/etc \
-	--with-xz \
-	--with-zlib \
-	--disable-gtk-doc
+set -o errexit
 
-make
-make -C /kmod-$KMOD_VERSION DESTDIR=/out/kmod-$KMOD_VERSION install
+cd /kmod-$KMOD_VERSION/debian
+sed -i s~"CONFFLAGS = --sysconfdir=/etc --bindir=/bin"~"CONFFLAGS = --sysconfdir=/etc --bindir=/bin --with-xz --with-zlib"~g rules
+cd ..
+debuild -us -uc
 
-tar -cvzf kmod-$KMOD_VERSION-$ARCH-$SUITE.tar.gz /out/kmod-$KMOD_VERSION/*
-
-# Upload to S3 (using AWS CLI)
-printf "$ACCESS_KEY\n$SECRET_KEY\n$REGION_NAME\n\n" | aws configure
-aws s3 cp kmod-$KMOD_VERSION-$ARCH-$SUITE.tar.gz s3://$BUCKET_NAME/kmod/v$KMOD_VERSION/
+cp /*.deb /output/
